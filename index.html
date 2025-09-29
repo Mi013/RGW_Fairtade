@@ -181,7 +181,7 @@
         const brand = document.querySelector('.brand');
         if(!brand) return;
         const img = document.createElement('img');
-        img.src = 'rgw_fair.png';
+        img.src = '/img/rgw_fair.png';
         img.alt = 'RGW Fair';
         img.className = 'rgw-logo';
         const logo = brand.querySelector('.logo');
@@ -383,6 +383,43 @@
                 <p class="small">Fair gehandelte Gummibärchen in verschiedenen Ausführungen</p>
                 <div style="margin-top:10px;display:flex;gap:8px">
                 <button class="btn" onclick="addToCart('Gummibärchen',0.75)">In den Warenkorb</button>
+
+                <script>
+                (function(){
+                    // Insert "Warenkorb" link into the main nav (if not present)
+                    const navUl = document.querySelector('nav ul');
+                    if(navUl && !document.getElementById('nav-cart-link')){
+                        const li = document.createElement('li');
+                        li.innerHTML = '<a href="#cart" id="nav-cart-link" class="nav-link">Warenkorb <span id="cart-count" style="font-weight:700;margin-left:8px;color:var(--fair-green)"></span></a>';
+                        navUl.appendChild(li);
+                    }
+
+                    function updateCartBadge(){
+                        const cntEl = document.getElementById('cart-count');
+                        const count = (window.cart && window.cart.length) ? window.cart.length : 0;
+                        if(cntEl) cntEl.textContent = count ? '('+count+')' : '';
+                    }
+
+                    // After page load, wrap addToCart to update badge on add
+                    window.addEventListener('load', ()=>{
+                        updateCartBadge();
+                        if(window.addToCart && !window.__copied_wrap_addToCart){
+                            const orig = window.addToCart;
+                            window.addToCart = function(name, price){
+                                orig(name, price);
+                                updateCartBadge();
+                            };
+                            window.__copied_wrap_addToCart = true;
+                        }
+                    });
+
+                    // also update badge when cart is rendered programmatically
+                    const cartObserver = new MutationObserver(updateCartBadge);
+                    const cartEl = document.getElementById('cart');
+                    if(cartEl) cartObserver.observe(cartEl, { childList: true, subtree: true });
+
+                })();
+                </script>
                 </div>
             </div>
             </article>
@@ -563,6 +600,4 @@
         onScroll();
     </script>
 </body>
-
 </html>
-
